@@ -2,33 +2,67 @@
 
 Анализ тональности HR-переписок и расчёт индекса Лосада (Losada Ratio) для оценки эффективности коммуникации в команде.
 
-## Установка
+## Возможности
+
+- Анализ тональности сообщений (позитив / негатив / нейтрально)
+- Расчёт индекса Лосада — общий и **по каждому сотруднику**
+- Поддержка форматов: `.txt`, `.csv`, `.json`
+- Web-интерфейс с визуализацией
+- Деплой на Vercel (serverless)
+
+## Быстрый старт
+
+### CLI (с моделью Dostoevsky)
 
 ```bash
 pip install -r requirements.txt
 python setup_model.py
-```
 
-## Использование
-
-```bash
-# Демо с встроенными примерами
+# Общий анализ
 python hr_sentiment.py
 
-# Анализ из файла (txt — одно сообщение на строку)
-python hr_sentiment.py -f chat.txt
+# Анализ по сотрудникам
+python hr_sentiment.py -e
 
-# Анализ из CSV (нужна колонка "message")
-python hr_sentiment.py -f chat.csv
+# Из файла с разбивкой по сотрудникам
+python hr_sentiment.py -e -f chat.csv
 
-# Анализ из JSON (список строк)
-python hr_sentiment.py -f chat.json
+# Экспорт в JSON
+python hr_sentiment.py -e -f chat.csv -o report.json
+```
 
-# Сохранить отчёт в JSON
-python hr_sentiment.py -f chat.txt -o report.json
+### Web UI (Vercel)
 
-# Изменить порог уверенности модели
-python hr_sentiment.py -f chat.txt --threshold 0.6
+```bash
+# Локальный запуск (нужен Vercel CLI)
+npm i -g vercel
+vercel dev
+
+# Деплой
+vercel --prod
+```
+
+## Форматы входных данных
+
+### TXT (с сотрудниками)
+```
+Иванов А.: Отличная работа с отчетом!
+Петрова М.: Почему снова сорвали дедлайн?
+```
+
+### CSV
+```csv
+employee,message
+Иванов А.,Отличная работа с отчетом!
+Петрова М.,Почему снова сорвали дедлайн?
+```
+
+### JSON
+```json
+[
+  {"employee": "Иванов А.", "message": "Отличная работа с отчетом!"},
+  {"employee": "Петрова М.", "message": "Почему снова сорвали дедлайн?"}
+]
 ```
 
 ## Индекс Лосада
@@ -38,3 +72,22 @@ python hr_sentiment.py -f chat.txt --threshold 0.6
 | < 2.9    | Зона застоя — слишком много критики |
 | 2.9–7.0  | Зона процветания — баланс в норме |
 | > 7.0    | Чрезмерная позитивность — проблемы могут замалчиваться |
+
+## Архитектура
+
+```
+├── hr_sentiment.py        # CLI: полный анализ с моделью Dostoevsky
+├── setup_model.py         # Загрузка ML-модели
+├── requirements.txt       # Зависимости для CLI
+├── api/
+│   ├── analyze.py         # Vercel serverless endpoint
+│   ├── sentiment_lite.py  # Лёгкий анализатор (словарный, без ML)
+│   └── requirements.txt   # Зависимости для Vercel
+├── public/
+│   └── index.html         # Web UI
+└── vercel.json            # Конфиг деплоя
+```
+
+> **Примечание:** Web-версия на Vercel использует облегчённый словарный анализатор (`sentiment_lite.py`),
+> т.к. ML-модель Dostoevsky (~300 МБ) не помещается в serverless-окружение.
+> Для точного анализа используйте CLI-версию с полной моделью.
