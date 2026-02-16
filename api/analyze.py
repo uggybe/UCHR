@@ -22,7 +22,7 @@ from http.server import BaseHTTPRequestHandler
 sys.path.insert(0, os.path.dirname(__file__))
 sys.path.insert(0, os.path.dirname(os.path.dirname(__file__)))
 
-from sentiment_lite import analyze_batch
+from _sentiment_lite import analyze_batch
 
 LOSADA_LOW = 2.9
 LOSADA_HIGH = 7.0
